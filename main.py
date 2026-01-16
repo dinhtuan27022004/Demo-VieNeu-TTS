@@ -2,10 +2,16 @@
 Demo VieNeuSDK v1.1.3 - Full Features Guide
 """
 
-import time
+import os
+import sys
+import datetime
 import soundfile as sf
 from vieneu import Vieneu
 from pathlib import Path
+
+# Thêm thư mục cha vào sys.path để import text_sample
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from text_sample import TEXT_SAMPLES
 
 def main():
     print("🚀 Initializing VieNeu SDK (v1.1.3)...")
@@ -79,18 +85,27 @@ def main():
     # ---------------------------------------------------------
     print("\n--- 3. Speech Synthesis ---")
     
-    text_input = "Xin chào, tôi là VieNeu-TTS. Tôi có thể giúp bạn đọc sách, làm chatbot thời gian thực, hoặc thậm chí clone giọng nói của bạn."
+    # Tạo thư mục output với timestamp
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    output_dir = Path(__file__).parent.parent / "results" / "VieNeu-TTS" / timestamp
+    output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Generate with specific temperature
-    print("🎧 Generating...")
-    audio = tts.infer(
-        text=text_input,
-        voice=current_voice,
-        temperature=1.0,  # Adjustable: Lower (0.1) -> Stable, Higher (1.0+) -> Expressive
-        top_k=50
-    )
-    sf.write("output.wav", audio, 24000)
-    print("💾 Saved: output.wav")
+    print(f"📁 Output directory: {output_dir}")
+    print(f"📝 Total samples: {len(TEXT_SAMPLES)}")
+    
+    for idx, text in enumerate(TEXT_SAMPLES):
+        print(f"\n🎧 Sample {idx + 1}/{len(TEXT_SAMPLES)}: {text[:50]}...")
+        
+        audio = tts.infer(
+            text=text,
+            voice=current_voice,
+            temperature=1.0,  # Lower (0.1) -> Stable, Higher (1.0+) -> Expressive
+            top_k=50
+        )
+        
+        output_file = output_dir / f"sample_{idx + 1}.wav"
+        sf.write(str(output_file), audio, 24000)
+        print(f"   💾 Saved: {output_file}")
 
     # ---------------------------------------------------------
     # CLEANUP
